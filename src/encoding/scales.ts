@@ -10,12 +10,18 @@ export function fundingToHeight(funding: number | null): number {
 
 const footprint = scaleSqrt().domain([0, 10000]).range([0.6, 1.6]).clamp(true);
 export function headcountToFootprintScale(headcount: number | null): number {
-  return footprint(headcount ?? 0);
+  // Unknown headcount is treated as the smallest footprint (the 0.6 floor), the
+  // same baseline as zero headcount. Intentional: an unknown company should not
+  // look bigger than a known small one.
+  if (headcount == null || headcount <= 0) return footprint(0);
+  return footprint(headcount);
 }
 
 const color = scaleSequential(interpolateViridis).domain([0, 1e10]).clamp(true);
 export function valuationToColor(valuation: number | null): string {
-  return color(valuation ?? 0);
+  // Unknown/zero valuation maps to the dark (low) end of the viridis ramp.
+  if (valuation == null || valuation <= 0) return color(0);
+  return color(valuation);
 }
 
 const glow = scaleSqrt().domain([0, 1e9]).range([0, 1]).clamp(true);

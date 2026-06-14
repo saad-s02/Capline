@@ -23,9 +23,15 @@ it("headcount scales footprint by area within bounds", () => {
   const a = headcountToFootprintScale(100), b = headcountToFootprintScale(400);
   expect(b - 0.6).toBeCloseTo((a - 0.6) * 2, 1);
 });
+it("treats unknown headcount as the footprint floor", () => {
+  expect(headcountToFootprintScale(null)).toBe(headcountToFootprintScale(0));
+});
 it("valuation maps to a viridis hex color", () => {
   expect(valuationToColor(0)).toMatch(/^#|rgb/);
   expect(valuationToColor(1e9)).not.toEqual(valuationToColor(0));
+});
+it("treats unknown valuation as the dark end (same as zero)", () => {
+  expect(valuationToColor(null)).toEqual(valuationToColor(0));
 });
 it("revenue glow is 0 when no revenue and rises with revenue", () => {
   expect(revenueToGlow(0)).toBe(0);

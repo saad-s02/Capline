@@ -7,4 +7,7 @@ it("produces height ticks and a color ramp", () => {
   expect(l.heightTicks[0]).toHaveProperty("meters");
   expect(l.colorStops.length).toBeGreaterThanOrEqual(3);
   expect(l.colorStops[0]).toHaveProperty("color");
+  // The $0 tick must reflect the actual floor height from fundingToHeight (15m),
+  // proving the legend is derived from the real scale, not hardcoded.
+  expect(l.heightTicks[0]).toEqual({ label: "$0", meters: 15 });
 });
