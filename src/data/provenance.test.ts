@@ -1,5 +1,5 @@
 import { it, expect } from "vitest";
-import { displayMetric, PRECEDENCE } from "./provenance";
+import { displayMetric, PRECEDENCE, selfReportConfidence } from "./provenance";
 import type { MetricRecord } from "./types";
 const rec = (sourceType: any, value: number): MetricRecord => ({
   metric: "funding_total", value, currency: "CAD", asOf: "2025-01-01",
@@ -15,4 +15,8 @@ it("returns null when no records", () => {
 it("PRECEDENCE ranks sec_edgar above press above unverified self_report", () => {
   expect(PRECEDENCE.indexOf("sec_edgar")).toBeLessThan(PRECEDENCE.indexOf("press"));
   expect(PRECEDENCE.indexOf("press")).toBeLessThan(PRECEDENCE.indexOf("self_reported"));
+});
+it("domain-verified self-report is higher confidence than free-email", () => {
+  expect(selfReportConfidence(true)).toBe("medium");
+  expect(selfReportConfidence(false)).toBe("low");
 });
