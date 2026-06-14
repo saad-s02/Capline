@@ -31,7 +31,6 @@ interface PopupInfo {
 
 export function MapView() {
   const mapRef = useRef<MapRef>(null);
-  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [popupInfo, setPopupInfo] = useState<PopupInfo | null>(null);
   const [isCompareMode, setIsCompareMode] = useState(false);
 
@@ -45,20 +44,13 @@ export function MapView() {
 
   const handleClick = useCallback(async (event: MapMouseEvent) => {
     const features = event.features;
-    if (!features || features.length === 0) {
-      setSelectedCompany(null);
-      setPopupInfo(null);
-      return;
-    }
-    const companyId = features[0]?.properties?.companyId as string | undefined;
+    const companyId = features?.[0]?.properties?.companyId as string | undefined;
     if (!companyId) {
-      setSelectedCompany(null);
       setPopupInfo(null);
       return;
     }
     const company = await getCompany(companyId);
     if (!company) return;
-    setSelectedCompany(company);
     setPopupInfo({
       longitude: event.lngLat.lng,
       latitude: event.lngLat.lat,
@@ -67,7 +59,6 @@ export function MapView() {
   }, []);
 
   const handleClosePopup = useCallback(() => {
-    setSelectedCompany(null);
     setPopupInfo(null);
   }, []);
 
@@ -84,9 +75,6 @@ export function MapView() {
       setIsCompareMode(true);
     }
   }, [isCompareMode]);
-
-  // Keep TypeScript happy: selectedCompany is read by popupInfo display
-  void selectedCompany;
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>

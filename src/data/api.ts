@@ -14,10 +14,29 @@ export interface RankRow {
   funding: number;
 }
 
+// Raw metric_records row (snake_case columns) -> MetricRecord (camelCase).
+interface MetricRow {
+  metric: MetricRecord["metric"]; value: number | null;
+  value_min: number | null; value_max: number | null; bucket: string | null;
+  currency: string; as_of: string | null;
+  source_type: MetricRecord["sourceType"]; source_url: string | null;
+  confidence: MetricRecord["confidence"]; last_verified_at: string | null;
+}
+function toMetricRecord(r: MetricRow): MetricRecord {
+  return {
+    metric: r.metric, value: r.value,
+    valueMin: r.value_min ?? undefined, valueMax: r.value_max ?? undefined,
+    bucket: r.bucket ?? undefined, currency: r.currency, asOf: r.as_of ?? "",
+    sourceType: r.source_type, sourceUrl: r.source_url ?? undefined,
+    confidence: r.confidence, lastVerifiedAt: r.last_verified_at ?? "",
+  };
+}
+
 export async function getCompany(companyId: string): Promise<Company | null> {
+  // metric_records is the related table; embed it by its real name and map columns.
   const { data, error } = await supabase
     .from("companies")
-    .select("*, metrics(*)")
+    .select("*, metric_records(*)")
     .eq("id", companyId)
     .single();
   if (error || !data) return null;
@@ -32,14 +51,16 @@ export async function getCompany(companyId: string): Promise<Company | null> {
     buildingId: data.building_id as string | undefined,
     wikidataQid: data.wikidata_qid as string | undefined,
     secCik: data.sec_cik as string | undefined,
-    metrics: (data.metrics as MetricRecord[]) ?? [],
+    metrics: ((data.metric_records as MetricRow[]) ?? []).map(toMetricRecord),
     weightBasis: data.weight_basis as Company["weightBasis"],
   };
 }
 
 export async function topByFunding(limit: number): Promise<RankRow[]> {
+  // funding_total lives in metric_records, so rank via the company_funding view
+  // (see supabase/migrations/002_company_funding_view.sql).
   const { data, error } = await supabase
-    .from("companies")
+    .from("company_funding")
     .select("id, display_name, funding_total")
     .order("funding_total", { ascending: false })
     .limit(limit);
