@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "facebook-marketplace": {
+      "command": "node",
+      "args": ["${FB_MARKETPLACE_MCP_DIR:-${HOME}/facebook-marketplace-mcp}/dist/index.js"],
+      "env": {
+        "CHROME_PROFILE": "Default"
+      }
+    }
+  }
+}
